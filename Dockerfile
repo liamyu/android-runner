@@ -3,7 +3,8 @@ LABEL maintainer="liam.yuonline@gmail.com"
 
 ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" ANDROID_HOME="/home/liam/env/android-sdk" PATH=$PATH:$ANDROID_HOME:$JAVA_HOME:$JAVA_HOME"/bin" PATH=$PATH:$ANDROID_HOME:"/tools/bin"
 
-RUN apt-get install openjdk-8-jdk \
+RUN apt-get update \
+    && apt-get install openjdk-8-jdk \
     && export JAVA_HOME=/usr/lib/jvm/java-8-openjdk \
     && export PATH=$PATH:$JAVA_HOME/bin \
     && apt-get clean \
