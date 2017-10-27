@@ -18,9 +18,13 @@ RUN wget --quiet --output-document=android-sdk-tools.zip https://dl.google.com/a
     && mkdir -p /home/liam/env/android-sdk/ \
     && unzip android-sdk-tools.zip -d /home/liam/env/android-sdk/ \
     && rm android-sdk-tools.zip \
-    && /home/liam/env/android-sdk/bin/sdkmanager --update
+    && /var/lib/dpkg/info/ca-certificates-java.postinst configure \
+    && /home/liam/env/android-sdk/tools/bin/sdkmanager --update
 
-RUN /home/liam/env/android-sdk/bin/sdkmanager "platform-tools" \
-    && /home/liam/env/android-sdk/bin/sdkmanager "build-tools;26.0.2"\
-    && /home/liam/env/android-sdk/bin/sdkmanager "platforms;android-21" "platforms;android-22" "platforms;android-23" "platforms;android-24" "platforms;android-25" "platforms;android-26" \
-    && /home/liam/env/android-sdk/bin/sdkmanager "extras;google;m2repository" "extras;android;m2repository"
+RUN mkdir -p $ANDROID_HOME/licenses \
+    && echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e" > "$ANDROID_HOME/licenses/android-sdk-license" \
+    && echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license" \
+    && /home/liam/env/android-sdk/tools/bin/sdkmanager "platform-tools" \
+    && /home/liam/env/android-sdk/tools/bin/sdkmanager "build-tools;26.0.2"\
+    && /home/liam/env/android-sdk/tools/bin/sdkmanager "platforms;android-25" "platforms;android-26" \
+    && /home/liam/env/android-sdk/tools/bin/sdkmanager "extras;google;m2repository" "extras;android;m2repository"
