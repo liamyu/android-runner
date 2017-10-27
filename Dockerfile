@@ -4,15 +4,17 @@ LABEL maintainer="liam.yuonline@gmail.com"
 ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" ANDROID_HOME="/home/liam/env/android-sdk" PATH=$PATH:$ANDROID_HOME:$JAVA_HOME:$JAVA_HOME"/bin" PATH=$PATH:$ANDROID_HOME:"/tools/bin"
 
 RUN apt-get update \
-    && apt-get install openjdk-8-jdk \
-    && export JAVA_HOME=/usr/lib/jvm/java-8-openjdk \
-    && export PATH=$PATH:$JAVA_HOME/bin \
+    && apt-get -y install software-properties-common \
+    && add-apt-repository ppa:webupd8team/java \
+    && apt-get -y install openjdk-8-jdk \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget --quiet --output-document=android-sdk-tools.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip \
+    && apt-get update \
+    && apt-get -y install zip \
+    && mkdir /home/liam/env/android-sdk/ \
     && unzip /tmp/android-sdk-tools.zip -d /home/liam/env/android-sdk/ \
-    && mkdir /home/liam/env/android-sdk/licenses \
     && sdkmanager --update
 
 RUN sdkmanager "platform-tools" \
