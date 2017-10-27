@@ -5,7 +5,8 @@ ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" ANDROID_HOME="/home/liam/env/a
 
 RUN apt-get update \
     && apt-get -y install software-properties-common \
-    && add-apt-repository ppa:webupd8team/java \
+    && add-apt-repository -y ppa:openjdk-r/ppa \
+    && apt-get update \
     && apt-get -y install openjdk-8-jdk \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -13,11 +14,13 @@ RUN apt-get update \
 RUN wget --quiet --output-document=android-sdk-tools.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip \
     && apt-get update \
     && apt-get -y install zip \
-    && mkdir /home/liam/env/android-sdk/ \
-    && unzip /tmp/android-sdk-tools.zip -d /home/liam/env/android-sdk/ \
-    && sdkmanager --update
+    && apt-get clean \
+    && mkdir -p /home/liam/env/android-sdk/ \
+    && unzip android-sdk-tools.zip -d /home/liam/env/android-sdk/ \
+    && rm android-sdk-tools.zip \
+    && /home/liam/env/android-sdk/bin/sdkmanager --update
 
-RUN sdkmanager "platform-tools" \
-    && sdkmanager "build-tools;26.0.2"\
-    && sdkmanager "platforms;android-21" "platforms;android-22" "platforms;android-23" "platforms;android-24" "platforms;android-25" "platforms;android-26" \
-    && sdkmanager "extras;google;m2repository" "extras;android;m2repository"
+RUN /home/liam/env/android-sdk/bin/sdkmanager "platform-tools" \
+    && /home/liam/env/android-sdk/bin/sdkmanager "build-tools;26.0.2"\
+    && /home/liam/env/android-sdk/bin/sdkmanager "platforms;android-21" "platforms;android-22" "platforms;android-23" "platforms;android-24" "platforms;android-25" "platforms;android-26" \
+    && /home/liam/env/android-sdk/bin/sdkmanager "extras;google;m2repository" "extras;android;m2repository"
