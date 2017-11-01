@@ -1,30 +1,30 @@
 #!/bin/bash
 set -e
 
-CA_CERTIFICATES_PATH=${CA_CERTIFICATES_PATH:-$GITLAB_CI_MULTI_RUNNER_DATA_DIR/certs/ca.crt}
+CA_CERTIFICATES_PATH=${CA_CERTIFICATES_PATH:-$GITLAB_RUNNER_DATA_DIR/certs/ca.crt}
 
 create_data_dir() {
-  mkdir -p ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}
-  chown ${GITLAB_CI_MULTI_RUNNER_USER}:${GITLAB_CI_MULTI_RUNNER_USER} ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}
+  mkdir -p ${GITLAB_RUNNER_DATA_DIR}
+  chown ${GITLAB_RUNNER_USER}:${GITLAB_RUNNER_USER} ${GITLAB_RUNNER_DATA_DIR}
 }
 
 generate_ssh_deploy_keys() {
-  sudo -HEu ${GITLAB_CI_MULTI_RUNNER_USER} mkdir -p ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/
+  sudo -HEu ${GITLAB_RUNNER_USER} mkdir -p ${GITLAB_RUNNER_DATA_DIR}/.ssh/
 
-  if [[ ! -e ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa || ! -e ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa.pub ]]; then
+  if [[ ! -e ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa || ! -e ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa.pub ]]; then
     echo "Generating SSH deploy keys..."
-    rm -rf ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa.pub
-    sudo -HEu ${GITLAB_CI_MULTI_RUNNER_USER} ssh-keygen -t rsa -N "" -f ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa
+    rm -rf ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa.pub
+    sudo -HEu ${GITLAB_RUNNER_USER} ssh-keygen -t rsa -N "" -f ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa
 
     echo ""
     echo -n "Your SSH deploy key is: "
-    cat ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa.pub
+    cat ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa.pub
     echo ""
   fi
 
-  chmod 600 ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/id_rsa.pub
-  chmod 700 ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh
-  chown -R ${GITLAB_CI_MULTI_RUNNER_USER}:${GITLAB_CI_MULTI_RUNNER_USER} ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/.ssh/
+  chmod 600 ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa ${GITLAB_RUNNER_DATA_DIR}/.ssh/id_rsa.pub
+  chmod 700 ${GITLAB_RUNNER_DATA_DIR}/.ssh
+  chown -R ${GITLAB_RUNNER_USER}:${GITLAB_RUNNER_USER} ${GITLAB_RUNNER_DATA_DIR}/.ssh/
 }
 
 update_ca_certificates() {
@@ -43,33 +43,33 @@ grant_access_to_docker_socket() {
       DOCKER_SOCKET_GROUP=docker
       groupadd -g ${DOCKER_SOCKET_GID} ${DOCKER_SOCKET_GROUP}
     fi
-    usermod -a -G ${DOCKER_SOCKET_GROUP} ${GITLAB_CI_MULTI_RUNNER_USER}
+    usermod -a -G ${DOCKER_SOCKET_GROUP} ${GITLAB_RUNNER_USER}
   fi
 }
 
 configure_ci_runner() {
-  if [[ ! -e ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/config.toml ]]; then
+  if [[ ! -e ${GITLAB_RUNNER_DATA_DIR}/config.toml ]]; then
     if [[ -n ${CI_SERVER_URL} && -n ${RUNNER_TOKEN} && -n ${RUNNER_DESCRIPTION} && -n ${RUNNER_EXECUTOR} ]]; then
-      sudo -HEu ${GITLAB_CI_MULTI_RUNNER_USER} \
-        gitlab-ci-multi-runner register --config ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/config.toml \
+      sudo -HEu ${GITLAB_RUNNER_USER} \
+        gitlab-runner register --config ${GITLAB_RUNNER_DATA_DIR}/config.toml \
           -n -u "${CI_SERVER_URL}" -r "${RUNNER_TOKEN}" --name "${RUNNER_DESCRIPTION}" --executor "${RUNNER_EXECUTOR}"
     else
-      sudo -HEu ${GITLAB_CI_MULTI_RUNNER_USER} \
-        gitlab-ci-multi-runner register --config ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/config.toml
+      sudo -HEu ${GITLAB_RUNNER_USER} \
+        gitlab-runner register --config ${GITLAB_RUNNER_DATA_DIR}/config.toml
     fi
   fi
 }
 
-# allow arguments to be passed to gitlab-ci-multi-runner
+# allow arguments to be passed to gitlab-runner
 if [[ ${1:0:1} = '-' ]]; then
   EXTRA_ARGS="$@"
   set --
-elif [[ ${1} == gitlab-ci-multi-runner || ${1} == $(which gitlab-ci-multi-runner) ]]; then
+elif [[ ${1} == gitlab-runner || ${1} == $(which gitlab-runner) ]]; then
   EXTRA_ARGS="${@:2}"
   set --
 fi
 
-# default behaviour is to launch gitlab-ci-multi-runner
+# default behaviour is to launch gitlab-runner
 if [[ -z ${1} ]]; then
   create_data_dir
   update_ca_certificates
@@ -78,10 +78,10 @@ if [[ -z ${1} ]]; then
   configure_ci_runner
 
   start-stop-daemon --start \
-    --chuid ${GITLAB_CI_MULTI_RUNNER_USER}:${GITLAB_CI_MULTI_RUNNER_USER} \
-    --exec $(which gitlab-ci-multi-runner) -- run \
-      --working-directory ${GITLAB_CI_MULTI_RUNNER_DATA_DIR} \
-      --config ${GITLAB_CI_MULTI_RUNNER_DATA_DIR}/config.toml ${EXTRA_ARGS}
+    --chuid ${GITLAB_RUNNER_USER}:${GITLAB_RUNNER_USER} \
+    --exec $(which gitlab-runner) -- run \
+      --working-directory ${GITLAB_RUNNER_DATA_DIR} \
+      --config ${GITLAB_RUNNER_DATA_DIR}/config.toml ${EXTRA_ARGS}
 else
   exec "$@"
 fi

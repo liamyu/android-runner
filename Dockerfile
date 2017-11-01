@@ -3,11 +3,10 @@ LABEL maintainer="liam.yuonline@gmail.com"
 
 ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64" \
     ANDROID_HOME="/home/liam/env/android-sdk" \
-    PATH=$PATH:$ANDROID_HOME:$JAVA_HOME:$JAVA_HOME"/bin" \
-    PATH=$PATH:$ANDROID_HOME:"/tools/bin" \    
-    GITLAB_CI_MULTI_RUNNER_USER=gitlab_ci_multi_runner \
-    GITLAB_CI_MULTI_RUNNER_HOME_DIR="/home/liam/gitlab_ci_multi_runner" \
-    GITLAB_CI_MULTI_RUNNER_DATA_DIR="${GITLAB_CI_MULTI_RUNNER_HOME_DIR}/data"
+    PATH=$PATH:$ANDROID_HOME:$JAVA_HOME'/bin':$ANDROID_HOME'/tools/bin' \    
+    GITLAB_RUNNER_USER=gitlab-runner \
+    GITLAB_RUNNER_HOME_DIR="/home/liam/gitlab_runner" \
+    GITLAB_RUNNER_DATA_DIR="${GITLAB_RUNNER_HOME_DIR}/data"
 
 RUN apt-get update \
     && apt-get -y install software-properties-common \
@@ -38,6 +37,6 @@ RUN mkdir -p $ANDROID_HOME/licenses \
 COPY entrypoint.sh /sbin/entrypoint.sh
 RUN chmod 755 /sbin/entrypoint.sh
 
-VOLUME ["${GITLAB_CI_MULTI_RUNNER_DATA_DIR}"]
-WORKDIR "${GITLAB_CI_MULTI_RUNNER_HOME_DIR}"
+VOLUME ["${GITLAB_RUNNER_DATA_DIR}"]
+WORKDIR "${GITLAB_RUNNER_HOME_DIR}"
 ENTRYPOINT ["/sbin/entrypoint.sh"]
